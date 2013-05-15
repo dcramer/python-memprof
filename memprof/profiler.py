@@ -97,7 +97,7 @@ def dump_memory(filename, frame):
                 'id': id(obj),
                 'class': str(type(obj)),
                 'size': sys.getsizeof(obj, 0),
-                'value_trim': repr(obj)[:100],
+                'value_trim': unicode(repr(obj))[:100],
                 'referents': dict(refs_by_type),
             }) + '\n')
 
