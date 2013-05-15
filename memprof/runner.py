@@ -97,7 +97,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    usage = "python -m memprof [-o output_file_path] scriptfile [arg] ..."
+    usage = "memprof [-o output_file_path] scriptfile [arg] ..."
     parser = OptionParser(usage=usage)
     parser.allow_interspersed_args = False
     parser.add_option(
