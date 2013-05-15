@@ -93,11 +93,15 @@ def dump_memory(filename, frame):
             refs_by_type = defaultdict(int)
             # for ref in with_class(gc.get_referents(obj)):
             #     refs_by_type[str(type(ref))] += 1
+            try:
+                obj_repr = repr(obj)
+            except TypeError:
+                obj_repr = '(no repr)'
             fp.write(json.dumps({
                 'id': id(obj),
                 'class': str(type(obj)),
                 'size': sys.getsizeof(obj, 0),
-                'value_trim': unicode(repr(obj))[:100],
+                'value_trim': obj_repr[:100],
                 'referents': dict(refs_by_type),
             }) + '\n')
 
