@@ -7,7 +7,7 @@ setup(
     version='0.1.0',
     author='David Cramer',
     author_email='dcramer@gmail.com',
-    url='http://github.com/tenxer/python-memprof',
+    url='http://github.com/dcramer/python-memprof',
     description='',
     packages=find_packages(exclude=["tests"]),
     zip_safe=False,
