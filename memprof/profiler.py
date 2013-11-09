@@ -65,8 +65,8 @@ def with_class(objs):
         yield o
 
 
-def dump_memory(fp, frame):
-    if not frame:
+def dump_memory(fp, frame=None):
+    if frame is None:
         frame = inspect.currentframe()
 
     process = psutil.Process(os.getpid())
