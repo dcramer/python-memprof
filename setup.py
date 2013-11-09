@@ -12,6 +12,7 @@ setup(
     packages=find_packages(exclude=["tests"]),
     zip_safe=False,
     install_requires=[
+        'psutil',
     ],
     license='Apache License 2.0',
     entry_points={
