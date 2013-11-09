@@ -65,45 +65,44 @@ def with_class(objs):
         yield o
 
 
-def dump_memory(filename, frame):
+def dump_memory(fp, frame):
     if not frame:
         frame = inspect.currentframe()
 
-    with open(filename, 'wb') as fp:
-        process = psutil.Process(os.getpid())
-        mem_info = process.get_ext_memory_info()
+    process = psutil.Process(os.getpid())
+    mem_info = process.get_ext_memory_info()
 
+    fp.write(json.dumps({
+        'stack': traceback.format_stack(frame),
+        'cmd': process.cmdline,
+        'openfiles': [
+            dict(
+                (k, getattr(f, k))
+                for k in ('path', 'fd')
+            )
+            for f in process.get_open_files()
+        ],
+        'mem': dict(
+            (k, getattr(mem_info, k))
+            for k in ('rss', 'vms')
+        ),
+    }) + '\n')
+
+    for obj in with_class(gc.get_objects()):
+        refs_by_type = defaultdict(int)
+        # for ref in with_class(gc.get_referents(obj)):
+        #     refs_by_type[str(type(ref))] += 1
+        try:
+            obj_repr = repr(obj)
+        except TypeError:
+            obj_repr = '(no repr)'
         fp.write(json.dumps({
-            'stack': traceback.format_stack(frame),
-            'cmd': process.cmdline,
-            'openfiles': [
-                dict(
-                    (k, getattr(f, k))
-                    for k in ('path', 'fd')
-                )
-                for f in process.get_open_files()
-            ],
-            'mem': dict(
-                (k, getattr(mem_info, k))
-                for k in ('rss', 'vms')
-            ),
+            'id': id(obj),
+            'class': str(type(obj)),
+            'size': sys.getsizeof(obj, 0),
+            'value_trim': obj_repr[:100],
+            'referents': dict(refs_by_type),
         }) + '\n')
-
-        for obj in with_class(gc.get_objects()):
-            refs_by_type = defaultdict(int)
-            # for ref in with_class(gc.get_referents(obj)):
-            #     refs_by_type[str(type(ref))] += 1
-            try:
-                obj_repr = repr(obj)
-            except TypeError:
-                obj_repr = '(no repr)'
-            fp.write(json.dumps({
-                'id': id(obj),
-                'class': str(type(obj)),
-                'size': sys.getsizeof(obj, 0),
-                'value_trim': obj_repr[:100],
-                'referents': dict(refs_by_type),
-            }) + '\n')
 
 
 def memcheck(output, threshold=ONE_GB, abort_on_hit=False,
@@ -126,7 +125,8 @@ def memcheck(output, threshold=ONE_GB, abort_on_hit=False,
                 filename))
 
         try:
-            dump_memory(filename, frame)
+            with open(filename, 'wb') as fp:
+                dump_memory(fp, frame)
         finally:
             if abort_on_hit:
                 sys.stderr.write('Aboring execution due to memory threshold\n')
